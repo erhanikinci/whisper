@@ -1,15 +1,22 @@
-import { connectDB } from "./src/config/databse";
 import app from "./src/app";
 
-const PORT = process.env.PORT || 3000
+import { createServer } from "http";
+import { initializeSocket } from "./src/utils/socket";
+import { connectDB } from "./src/config/database";
 
-connectDB().then(() => {
-    app.listen(PORT, () => {
-        console.log('====================================');
-        console.log("Server is up and running PORT: ", PORT);
-        console.log('====================================');
+const PORT = process.env.PORT || 3000;
+
+const httpServer = createServer(app);
+
+initializeSocket(httpServer);
+
+connectDB()
+  .then(() => {
+    httpServer.listen(PORT, () => {
+      console.log("Server is running on PORT:", PORT);
     });
-}).catch((error) => {
-    console.error('Failed to connect to database:', error);
+  })
+  .catch((error) => {
+    console.error("Failed to start server:", error);
     process.exit(1);
-});
+  });
