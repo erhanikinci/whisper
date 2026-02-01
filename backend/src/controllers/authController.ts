@@ -30,20 +30,20 @@ export async function authCallback(req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    let user = await User.findOneAndUpdate({ clerkId }, { $setOnInsert: { clerkId, name, email, avatar: clerkUser.imageUrl } }, { upsert: true, new: true });
+    let user = await User.findOne({ clerkId });
 
     if (!user) {
       // get user info from clerk and save to db
       const clerkUser = await clerkClient.users.getUser(clerkId);
 
-      const name = clerkUser.firstName
+      user = await User.create({
+        clerkId,
+        name: clerkUser.firstName
           ? `${clerkUser.firstName} ${clerkUser.lastName || ""}`.trim()
-          : clerkUser.primaryPhoneNumber || "Unnamed User";
-      const email = clerkUser.emailAddresses[0]?.emailAddress || `${clerkId}@no-email.local`;
-      if (!email) {
-        throw new Error('Email is required for user creation.');
-      }
-      user = await User.findOneAndUpdate({ clerkId }, { $setOnInsert: { clerkId, name, email, avatar: clerkUser.imageUrl } }, { upsert: true, new: true });
+          : clerkUser.emailAddresses[0]?.emailAddress?.split("@")[0],
+        email: clerkUser.emailAddresses[0]?.emailAddress,
+        avatar: clerkUser.imageUrl,
+      });
     }
 
     res.json(user);
