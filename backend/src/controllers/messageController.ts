@@ -24,7 +24,6 @@ export async function getMessages(req: AuthRequest, res: Response, next: NextFun
 
     res.json(messages);
   } catch (error) {
-    res.status(500);
     next(error);
   }
 }

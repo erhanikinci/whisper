@@ -37,7 +37,7 @@ export async function getOrCreateChat(req: AuthRequest, res: Response, next: Nex
     const { participantId } = req.params;
 
     if (!participantId) {
-      res.status(400).json({ message: "Participant ID is required" });
+      return res.status(400).json({ message: "Participant ID is required" });
       return;
     }
 
@@ -51,9 +51,9 @@ export async function getOrCreateChat(req: AuthRequest, res: Response, next: Nex
     }
 
     // check if chat already exists
-    let chat = await Chat.findOne({
+    let chat = await Chat.findOneAndUpdate({
       participants: { $all: [userId, participantId] },
-    })
+    }, { $setOnInsert: { participants: [userId, participantId], lastMessage: null } }, { upsert: true, new: true })
       .populate("participants", "name email avatar")
       .populate("lastMessage");
 

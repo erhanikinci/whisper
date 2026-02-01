@@ -12,7 +12,6 @@ export async function getUsers(req: AuthRequest, res: Response, next: NextFuncti
 
     res.json(users);
   } catch (error) {
-    res.status(500);
     next(error);
   }
 }
